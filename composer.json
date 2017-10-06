@@ -21,7 +21,7 @@
         "classmap": [
             "tests/",
             "database/"
-        ]s
+        ]
     },
     "autoload-dev": {
         "classmap": [

@@ -18,10 +18,8 @@ class UserController extends Controller
 
     foreach ($data as $key => $val) {
       $links[$key] = $val;
-         $links[$key]['links'] = [
-             '_links' => [
-                 'self' => 'http://book-ap.dev/user/' . $val["id"]
-             ]
+         $links[$key]['_links'] = [
+           'self' => 'http://book-ap.dev/user/' . $val["id"]
          ];
      }
 
