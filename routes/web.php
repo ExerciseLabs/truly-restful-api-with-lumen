@@ -13,9 +13,10 @@
 
 $router->post('/user', 'UserController@store');
 
+
 $router->get('/user/{id}', 'UserController@find')
-->put('/user/{id}', 'UserController@update')
-->patch('/user/{id}', 'UserController@update')
-->delete('/user/{id}', 'UserController@delete');
+    ->put('/user/{id}', 'UserController@update')
+    ->patch('/user/{id}', 'UserController@update')
+    ->delete('/user/{id}', 'UserController@delete');
 
 $router->get('/users', 'UserController@index');
