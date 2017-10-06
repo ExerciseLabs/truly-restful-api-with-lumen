@@ -6,76 +6,89 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Hashing\BcryptHasher;
 
+/**
+ * Class UserController
+ */
 class UserController extends Controller
 {
+    /**
+     * Get all users
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index()
+    {
+        $users = User::all();
+        $data = $users->toArray();
+        $links = [];
 
-  public function index()
-  {
-    $users = User::all();
+        foreach ($data as $key => $val) {
+            $links[$key] = $val;
+            $links[$key]['_links'] = [
+                'self' => 'http://book-ap.dev/user/' . $val["id"]
+            ];
+        }
 
-    $data = $users->toArray();
-    $links = [];
-
-    foreach ($data as $key => $val) {
-      $links[$key] = $val;
-         $links[$key]['_links'] = [
-           'self' => 'http://book-ap.dev/user/' . $val["id"]
-         ];
-     }
-
-     return response()->json(
-       [
-         'response' => [
-           'users' => $links
-         ]], 200
-       );
-  }
+        return response()->json(
+            [
+                'response' => [
+                    'users' => $links
+                ]
+            ], 200
+        );
+    }
 
     /**
      * Create a new user resource.
+     *
+     * @param Request $request request
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
     {
-      $response = [];
-      $status = 1;
+        $response = [];
+        $status = 1;
 
-      $this->validate(
-        $request, [
-          'name' => 'required',
-          'email' => 'required|unique:users|email',
-          'password' => 'required'
-        ]
-      );
+        $this->validate(
+            $request, [
+                'name' => 'required',
+                'email' => 'required|unique:users|email',
+                'password' => 'required'
+            ]
+        );
 
-      $name = $request->input('name');
-      $email = $request->input('email');
-      $password = $request->input('password');
-      $hashedPassword = (new BcryptHasher)->make($password);
+        $name = $request->input('name');
+        $email = $request->input('email');
+        $password = $request->input('password');
+        $hashedPassword = (new BcryptHasher)->make($password);
 
-      $user = new User(
-          [
-              'name' => $name,
-              'email' => $email,
-              'password' => $hashedPassword
-          ]
-      );
+        $user = new User(
+            [
+                'name' => $name,
+                'email' => $email,
+                'password' => $hashedPassword
+            ]
+        );
 
-      try {
-        if ($user->save()) {
-          $response["created"] = true;
-          $response['_links'] = [
-            'self' => 'http://book-ap.dev/user/' . $user->id
-          ];
-          $status = 201;
+        try {
+            if ($user->save()) {
+                $response["created"] = true;
+                $response['_links'] = [
+                    'self' => 'http://book-ap.dev/user/' . $user->id
+                ];
+                $status = 201;
+            }
+        } catch (\Exception $e) {
+            $response["error"] = $e->getMessage();
+            $status = 422;
         }
-      } catch (Exception $e) {
-        $response["error"] = $e->getMessage();
-        $status = 422;
-      }
 
-      return response()->json([
-        'response' => $response
-      ], $status);
+        return response()->json(
+            [
+                'response' => $response
+            ], $status
+        );
     }
 
     /**
