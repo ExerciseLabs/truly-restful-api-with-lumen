@@ -1,15 +1,15 @@
 <?php
 
-use Laravel\Lumen\Testing\DatabaseMigrations;
-use Laravel\Lumen\Testing\DatabaseTransactions;
-
 /**
  * Class UserTest
  */
 class UserTest extends TestCase
 {
     /**
-     * Stup
+     * Run migrations
+     * Seed Adatabase
+     *
+     * @return void
      */
     public function setUp()
     {
@@ -113,7 +113,9 @@ class UserTest extends TestCase
     }
 
     /**
-     * Down method
+     * Reset Migrations
+     *
+     * @return void
      */
     public function tearDown()
     {
