@@ -92,102 +92,122 @@ class UserController extends Controller
     }
 
     /**
-    * Get one user from the database
-    */
+     * Get one user from the database
+     *
+     * @param int $userId userId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function find($userId)
     {
-      $response = [];
-      $status = 200;
+        $response = [];
+        $status = 200;
 
-      $user = self::userExist($userId);
+        $user = self::userExist($userId);
 
-      if(! $user ) {
-        $response['error'] = 'User not found.';
-        $status = 404;
-      } else {
-        $response['response'] = $user;
-      }
+        if (! $user ) {
+            $response['error'] = 'User not found.';
+            $status = 404;
+        } else {
+            $response['response'] = $user;
+        }
 
-      return response()->json([
-        'response' => $response
-      ], $status);
+        return response()->json(
+            [
+                'response' => $response
+            ], $status
+        );
     }
 
     /**
-    * Implement a full/partial update
-    */
+     * Implement a full/partial update
+     *
+     * @param Request $request request
+     * @param int     $userId  userId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, $userId)
     {
-      $response = [];
-      $status = 1;
+        $response = [];
+        $status = 1;
 
-      $user = self::userExist($userId);
+        $user = self::userExist($userId);
 
-      if (! $user || $user === null) {
-        $response["error"] = 'User not found.';
-        $status = 404;
-      } else {
-        $fields = $request->only('name', 'password');
-        foreach ($fields as $key => $val)
-        {
-          if ($val !== null || !is_null($val)) {
-            $user->$key = $val;
-          }
+        if (! $user || $user === null) {
+            $response["error"] = 'User not found.';
+            $status = 404;
+        } else {
+            $fields = $request->only('name', 'password');
+            foreach ($fields as $key => $val) {
+                if ($val !== null || !is_null($val)) {
+                    $user->$key = $val;
+                }
+            }
+
+            try {
+                if ($user->save()) {
+                    $response["updated"] = true;
+                    $status = 200;
+                }
+            } catch (\Exception $e) {
+                $response["error"] = $e->getMessage();
+                $status = 422;
+            }
         }
 
-        try {
-          if ($user->save()) {
-            $response["updated"] = true;
-            $status = 200;
-          }
-        } catch (Exception $e) {
-          $response["error"] = $e->getMessage();
-          $status = 422;
-        }
-      }
-
-      return response()->json(
-        [
-          'response' => $response
-        ], $status);
+        return response()->json(
+            [
+                'response' => $response
+            ], $status
+        );
     }
 
     /**
-    * Delete a resource
-    */
+     * Delete a resource
+     *
+     * @param int $userId userId
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function delete($userId)
     {
-      $response = [];
-      $status = 1;
+        $response = [];
+        $status = 1;
 
-      $user = self::userExist($userId);
+        $user = self::userExist($userId);
 
-      if (! $user || $user === null) {
-        $response["error"] = 'User not found.';
-        $status = 404;
-      } else {
-        try {
-          if ($user->delete()) {
-            $response["deleted"] = true;
-            $status = 202;
-          }
-        } catch (Exception $e) {
-          $response["error"] = $e->getMessage();
-          $status = 422;
+        if (! $user || $user === null) {
+            $response["error"] = 'User not found.';
+            $status = 404;
+        } else {
+            try {
+                if ($user->delete()) {
+                    $response["deleted"] = true;
+                    $status = 202;
+                }
+            } catch (\Exception $e) {
+                $response["error"] = $e->getMessage();
+                $status = 422;
+            }
         }
-      }
 
-      return response()->json(
-        [
-          'response' => $response
-        ], $status);
+        return response()->json(
+            [
+                'response' => $response
+            ], $status
+        );
     }
 
     /**
-    * Check if user exist by id
-    */
+     * Check if user exist by id
+     *
+     * @param int $id id
+     *
+     * @return bool|mixed|static
+     */
     protected static function userExist($id)
     {
-      return User::find($id) ?? false;
+        return User::find($id) ?? false;
     }
 }
