@@ -18,24 +18,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::all();
-        $data = $users->toArray();
-        $links = [];
-
-        foreach ($data as $key => $val) {
-            $links[$key] = $val;
-            $links[$key]['_links'] = [
-                'self' => 'http://book-ap.dev/user/' . $val["id"]
-            ];
-        }
-
-        return response()->json(
-            [
-                'response' => [
-                    'users' => $links
-                ]
-            ], 200
-        );
+        return response(['data' => User::all()->toArray()]);
     }
 
     /**
@@ -47,9 +30,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $response = [];
-        $status = 1;
-
         $this->validate(
             $request, [
                 'name' => 'required',
@@ -58,36 +38,21 @@ class UserController extends Controller
             ]
         );
 
-        $name = $request->input('name');
-        $email = $request->input('email');
-        $password = $request->input('password');
-        $hashedPassword = (new BcryptHasher)->make($password);
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'hashedPassword' => (new BcryptHasher)->make($request->password)
+        ];
 
-        $user = new User(
+        $user = User::create($data);
+
+        $statusCode = $user ? 200 : 422;
+
+        return response(
             [
-                'name' => $name,
-                'email' => $email,
-                'password' => $hashedPassword
-            ]
-        );
-
-        try {
-            if ($user->save()) {
-                $response["created"] = true;
-                $response['_links'] = [
-                    'self' => 'http://book-ap.dev/user/' . $user->id
-                ];
-                $status = 201;
-            }
-        } catch (\Exception $e) {
-            $response["error"] = $e->getMessage();
-            $status = 422;
-        }
-
-        return response()->json(
-            [
-                'response' => $response
-            ], $status
+                'data' => $user,
+                'status' => $user ? "success" : "error",
+            ], $statusCode
         );
     }
 
@@ -98,24 +63,19 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function find($userId)
+    public function show($userId)
     {
-        $response = [];
-        $status = 200;
-
-        $user = self::userExist($userId);
-
-        if (! $user ) {
-            $response['error'] = 'User not found.';
-            $status = 404;
-        } else {
-            $response['response'] = $user;
+        try {
+            $user = User::findOrFail($userId);
+        } catch (\Exception $e) {
+            $user = null;
+            $statusCode = 404;
         }
-
-        return response()->json(
+        return response(
             [
-                'response' => $response
-            ], $status
+                'data' => $user,
+                'status' => $user ? "success" : "error",
+            ], $statusCode ?? 201
         );
     }
 
@@ -129,37 +89,19 @@ class UserController extends Controller
      */
     public function update(Request $request, $userId)
     {
-        $response = [];
-        $status = 1;
-
-        $user = self::userExist($userId);
-
-        if (! $user || $user === null) {
-            $response["error"] = 'User not found.';
-            $status = 404;
-        } else {
-            $fields = $request->only('name', 'password');
-            foreach ($fields as $key => $val) {
-                if ($val !== null || !is_null($val)) {
-                    $user->$key = $val;
-                }
-            }
-
-            try {
-                if ($user->save()) {
-                    $response["updated"] = true;
-                    $status = 200;
-                }
-            } catch (\Exception $e) {
-                $response["error"] = $e->getMessage();
-                $status = 422;
-            }
+        try {
+            $user = self::userExist($userId);
+            $user->update($request->only('name', 'password'));
+        } catch(\Exception $e) {
+            $user = null;
+            $statusCode = 404;
         }
 
-        return response()->json(
+        return response(
             [
-                'response' => $response
-            ], $status
+                "data" => $user,
+                "status" => $user ? "success" : "error"
+            ], $statusCode ?? 200
         );
     }
 
@@ -208,6 +150,6 @@ class UserController extends Controller
      */
     protected static function userExist($id)
     {
-        return User::find($id) ?? false;
+        return User::findOrFail($id);
     }
 }
