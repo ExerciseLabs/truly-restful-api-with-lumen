@@ -29,30 +29,6 @@ class UserTest extends TestCase
     }
 
     /**
-     * Test can create a user
-     *
-     * @return void
-     */
-    public function testCanCreateUser()
-    {
-        $this->json(
-            'POST', '/user', [
-            'name' => 'Sally',
-            'email' => 'sally@foo.com',
-            'password' => 'salisg']
-        )->seeJson(
-            [
-                'response' => [
-                    'created' => true,
-                    '_links' => [
-                        'self' => 'http://book-ap.dev/user/6'
-                    ]
-                ]
-            ]
-        )->seeStatusCode(201);
-    }
-
-    /**
      * Test that name field is required
      *
      * @return void
@@ -60,7 +36,7 @@ class UserTest extends TestCase
     public function testThatNameFieldIsRequiredToCreateAUser()
     {
         $this->json(
-            'POST', '/user', [
+            'POST', '/users', [
                 'name' => ' '
             ]
         )->seeJson(
@@ -80,7 +56,7 @@ class UserTest extends TestCase
     public function testThatEmailFieldIsRequiredToCreateAUser()
     {
         $this->json(
-            'POST', '/user', [
+            'POST', '/users', [
                 'email' => ' '
             ]
         )->seeJson(
@@ -100,7 +76,7 @@ class UserTest extends TestCase
     public function testThatPasswordFieldIsRequiredToCreateAUser()
     {
         $this->json(
-            'POST', '/user', [
+            'POST', '/users', [
                 'password' => ' '
             ]
         )->seeJson(
