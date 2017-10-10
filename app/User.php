@@ -21,12 +21,26 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'name', 'email', 'password'
     ];
 
+    protected $appends = ['links'];
+
+    /**
+     * St attributes links
+     *
+     * @return array
+     */
+    public function getLinksAttribute()
+    {
+        return [
+            'self' => app()->make('url')->to("/users/{$this->attributes['id']}")
+        ];
+    }
+
     /**
      * The attributes excluded from the model's JSON form.
      *
      * @var array
      */
     protected $hidden = [
-        'password',
+        'password', 'created_at', 'updated_at'
     ];
 }
