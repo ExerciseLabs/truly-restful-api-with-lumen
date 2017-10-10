@@ -74,7 +74,7 @@ class UserController extends Controller
         return response(
             [
                 'data' => $user,
-                'status' => $user ? "success" : "error",
+                'status' => $user ? "success" : "Not found.",
             ], $statusCode ?? 201
         );
     }
@@ -100,7 +100,7 @@ class UserController extends Controller
         return response(
             [
                 "data" => $user,
-                "status" => $user ? "success" : "error"
+                "status" => $user ? "success" : "Not found."
             ], $statusCode ?? 200
         );
     }
@@ -114,30 +114,19 @@ class UserController extends Controller
      */
     public function delete($userId)
     {
-        $response = [];
-        $status = 1;
-
-        $user = self::userExist($userId);
-
-        if (! $user || $user === null) {
-            $response["error"] = 'User not found.';
-            $status = 404;
-        } else {
-            try {
-                if ($user->delete()) {
-                    $response["deleted"] = true;
-                    $status = 202;
-                }
-            } catch (\Exception $e) {
-                $response["error"] = $e->getMessage();
-                $status = 422;
-            }
+        try {
+            $user = self::userExist($userId);
+            $user->delete();
+        } catch(\Exception $e) {
+            $user = null;
+            $statusCode = 404;
         }
 
-        return response()->json(
+        return response(
             [
-                'response' => $response
-            ], $status
+                "data" => $user,
+                "status" => $user ? "success" : "Not found."
+            ], $statusCode ?? 200
         );
     }
 

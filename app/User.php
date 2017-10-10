@@ -21,10 +21,15 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'name', 'email', 'password'
     ];
 
+    /**
+     * Append links attribute.
+     *
+     * @var array
+     */
     protected $appends = ['links'];
 
     /**
-     * St attributes links
+     * Set attributes links
      *
      * @return array
      */
