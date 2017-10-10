@@ -11,12 +11,14 @@
 |
 */
 
-$router->post('/user', 'UserController@store');
-
-
-$router->get('/user/{id}', 'UserController@find')
-    ->put('/user/{id}', 'UserController@update')
-    ->patch('/user/{id}', 'UserController@update')
-    ->delete('/user/{id}', 'UserController@delete');
-
-$router->get('/users', 'UserController@index');
+$router->group(
+    [
+        'prefix' => '/users'
+    ], function ($router) {
+        $router->get('/', 'UserController@index');
+        $router->post('/', 'UserController@store');
+        $router->get('/{id}', 'UserController@show');
+        $router->put('/{id}', 'UserController@update');
+        $router->delete('/{id}', 'UserController@delete');
+    }
+);
